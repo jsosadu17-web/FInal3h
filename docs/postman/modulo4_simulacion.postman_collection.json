@@ -1,0 +1,16 @@
+{
+  "info": {"name": "SistemaCaja - Módulo 4", "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"},
+  "variable": [{"key": "baseUrl", "value": "http://localhost:7070"}, {"key": "empresaId", "value": "1"}, {"key": "escenarioId", "value": "1"}],
+  "item": [
+    {"name": "Listar escenarios", "request": {"method": "GET", "url": "{{baseUrl}}/api/escenarios"}},
+    {"name": "Crear escenario", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"nombre\": \"Caída de ventas\",\n  \"descripcion\": \"Escenario pesimista\",\n  \"empresaId\": 1,\n  \"variacionIngresosPorcentaje\": -10.00,\n  \"variacionEgresosPorcentaje\": 15.00,\n  \"numeroPeriodos\": 3,\n  \"tipoPeriodo\": \"MENSUAL\"\n}"}, "url": "{{baseUrl}}/api/escenarios"}},
+    {"name": "Obtener escenario", "request": {"method": "GET", "url": "{{baseUrl}}/api/escenarios/{{escenarioId}}"}},
+    {"name": "Escenarios por empresa", "request": {"method": "GET", "url": "{{baseUrl}}/api/escenarios/empresa/{{empresaId}}"}},
+    {"name": "Actualizar escenario", "request": {"method": "PUT", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"nombre\": \"Escenario actualizado\",\n  \"descripcion\": \"Prueba\",\n  \"empresaId\": 1,\n  \"variacionIngresosPorcentaje\": 5.00,\n  \"variacionEgresosPorcentaje\": 5.00,\n  \"numeroPeriodos\": 3,\n  \"tipoPeriodo\": \"MENSUAL\"\n}"}, "url": "{{baseUrl}}/api/escenarios/{{escenarioId}}"}},
+    {"name": "Desactivar escenario", "request": {"method": "DELETE", "url": "{{baseUrl}}/api/escenarios/{{escenarioId}}"}},
+    {"name": "Ejecutar simulación", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"escenarioId\": 1,\n  \"fechaInicioHistorial\": \"2026-01-01\",\n  \"fechaFinHistorial\": \"2026-07-31\",\n  \"guardarResultado\": true\n}"}, "url": "{{baseUrl}}/api/simulaciones"}},
+    {"name": "Proyecciones por escenario", "request": {"method": "GET", "url": "{{baseUrl}}/api/simulaciones/escenario/{{escenarioId}}"}},
+    {"name": "Proyecciones por empresa", "request": {"method": "GET", "url": "{{baseUrl}}/api/simulaciones/empresa/{{empresaId}}"}},
+    {"name": "Eliminar proyecciones", "request": {"method": "DELETE", "url": "{{baseUrl}}/api/simulaciones/escenario/{{escenarioId}}"}}
+  ]
+}

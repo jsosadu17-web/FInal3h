@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${titulo}">Formulario Movimiento</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="container mt-5" style="max-width:700px;">
+<div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+        <h4 class="mb-0" th:text="${titulo}">Registrar Movimiento</h4>
+    </div>
+    <div class="card-body">
+        <form th:action="@{/movimientos-caja/guardar}" th:object="${movimientoCaja}" method="post">
+            <input type="hidden" th:field="*{id}">
+
+            <div class="mb-3">
+                <label for="fechaMovimiento" class="form-label">Fecha y hora</label>
+                <input type="datetime-local" id="fechaMovimiento" th:field="*{fechaMovimiento}" class="form-control">
+                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('fechaMovimiento')}" th:errors="*{fechaMovimiento}"></div>
+            </div>
+
+            <div class="mb-3">
+                <label for="tipo" class="form-label">Tipo</label>
+                <select id="tipo" th:field="*{tipo}" class="form-select">
+                    <option value="">-- Seleccione tipo --</option>
+                    <option value="INGRESO">Ingreso</option>
+                    <option value="EGRESO">Egreso</option>
+                </select>
+                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('tipo')}" th:errors="*{tipo}"></div>
+            </div>
+
+            <div class="mb-3">
+                <label for="categoriaMovimientoId" class="form-label">Categoría</label>
+                <select id="categoriaMovimientoId" th:field="*{categoriaMovimientoId}" class="form-select">
+                    <option value="">-- Seleccione categoría --</option>
+                    <option th:each="cat : ${categorias}"
+                            th:value="${cat.id}"
+                            th:text="${cat.nombre + ' (' + cat.tipo + ')'}">Categoría</option>
+                </select>
+                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('categoriaMovimientoId')}" th:errors="*{categoriaMovimientoId}"></div>
+            </div>
+
+            <div class="mb-3">
+                <label for="cuentaCajaId" class="form-label">Cuenta de caja</label>
+                <select id="cuentaCajaId" th:field="*{cuentaCajaId}" class="form-select">
+                    <option value="">-- Seleccione cuenta --</option>
+                    <option th:each="cta : ${cuentas}"
+                            th:value="${cta.id}"
+                            th:text="${cta.nombreCuenta + ' - ' + (cta.empresa != null ? cta.empresa.razonSocial : 'Sin empresa')}">Cuenta</option>
+                </select>
+                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('cuentaCajaId')}" th:errors="*{cuentaCajaId}"></div>
+            </div>
+
+            <div class="mb-3">
+                <label for="monto" class="form-label">Monto</label>
+                <input type="number" step="0.01" min="0.01" id="monto" th:field="*{monto}" class="form-control" placeholder="0.00">
+                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('monto')}" th:errors="*{monto}"></div>
+            </div>
+
+            <div class="mb-3">
+                <label for="descripcion" class="form-label">Descripción</label>
+                <textarea id="descripcion" th:field="*{descripcion}" class="form-control" rows="3" placeholder="Detalle del movimiento"></textarea>
+                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('descripcion')}" th:errors="*{descripcion}"></div>
+            </div>
+
+            <div class="d-flex justify-content-between pt-2">
+                <a th:href="@{/movimientos-caja}" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-success">Guardar Movimiento</button>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Formulario Cuenta</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="container mt-5" style="max-width:600px;">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0" th:text="${titulo != null ? titulo : 'Registrar Cuenta'}">Registrar Cuenta</h4>
+        </div>
+        <div class="card-body">
+        <form th:action="@{/cuentas/guardar}" th:object="${cuentaCaja}" method="post">
+
+            <!-- Campo oculto para conservar el ID en ediciones -->
+            <input type="hidden" th:field="*{id}">
+
+            <div class="mb-3">
+                <label for="numeroCuenta" class="form-label">Numero de Cuenta</label>
+                <input type="text" id="numeroCuenta" th:field="*{numeroCuenta}" class="form-control" placeholder="Ej. 191-1234567-0-01"/>
+                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('numeroCuenta')}" th:errors="*{numeroCuenta}"></div>
+            </div>
+            <div class="mb-3">
+                <label for="nombreCuenta" class="form-label">Nombre de Caja</label>
+                <input type="text" id="nombreCuenta" th:field="*{nombreCuenta}" class="form-control" placeholder="Ej. Caja Soles/Caja Chica"/>
+                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('nombreCuenta')}" th:errors="*{nombreCuenta}"></div>
+            </div>
+            <div class="mb-3">
+                <label for="saldo" class="form-label">Saldo Inicial</label>
+                <input type="number" step="0.01" id="saldo" th:field="*{saldo}" class="form-control" placeholder="0.00"/>
+                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('saldo')}" th:errors="*{saldo}"></div>
+            </div>
+
+            <!-- Desplegable para asociar la Empresa -->
+            <div class="mb-3">
+                <label for="empresa" class="form-label">Empresa Perteneciente</label>
+                <select id="empresa" th:field="*{empresa.id}" class="form-select">
+                    <option value="">--Seleccione una Empresa--</option>
+                    <option th:each="emp : ${empresas}"
+                            th:value="${emp.id}"
+                            th:text="${emp.razonSocial + ' (RUC: ' + emp.ruc + ')'}">
+                    </option>
+                </select>
+                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('empresa')}" th:errors="*{empresa}"></div>
+            </div>
+
+            <div class="d-flex justify-content-between pt-2">
+                <a th:href="@{/cuentas}" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-success">Guardar Cuenta</button>
+            </div>
+        </form>
+        </div>
+    </div>
+</body>
+</html>

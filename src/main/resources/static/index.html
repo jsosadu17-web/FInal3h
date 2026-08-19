@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Simulador de Flujo de Caja - Panel de Pruebas API</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="bg-light">
+
+<nav class="navbar navbar-dark bg-dark mb-4">
+    <div class="container">
+        <span class="navbar-brand mb-0 h1">Simulador de Flujo de Caja — Panel de Pruebas API</span>
+    </div>
+</nav>
+
+<div class="container" style="max-width: 900px;">
+
+    <!-- ===================== LOGIN ===================== -->
+    <div class="card shadow-sm mb-4" id="cardLogin">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">1. Iniciar sesión (POST /api/auth/login)</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <label class="form-label">Usuario</label>
+                    <input type="text" id="loginUsername" class="form-control" placeholder="Ej. leo">
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label">Contraseña</label>
+                    <input type="password" id="loginPassword" class="form-control" placeholder="********">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button class="btn btn-success w-100" onclick="login()">Ingresar</button>
+                </div>
+            </div>
+            <div id="loginResultado" class="mt-3"></div>
+        </div>
+    </div>
+
+    <!-- ================= SESION ACTIVA ================= -->
+    <div class="card shadow-sm mb-4 d-none" id="cardSesion">
+        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+            <span>Sesión activa</span>
+            <button class="btn btn-sm btn-light" onclick="cerrarSesion()">Cerrar sesión</button>
+        </div>
+        <div class="card-body">
+            <p class="mb-1"><strong>Usuario:</strong> <span id="sesionUsername"></span></p>
+            <p class="mb-1"><strong>Rol:</strong> <span id="sesionRol"></span></p>
+            <p class="mb-0 text-break"><strong>Token JWT:</strong> <code id="sesionToken" class="small"></code></p>
+        </div>
+    </div>
+
+    <!-- ============== PROBAR ENDPOINTS REST ============== -->
+    <div class="card shadow-sm mb-4 d-none" id="cardPruebas">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">2. Probar endpoints protegidos (requieren token)</h5>
+        </div>
+        <div class="card-body">
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                <button class="btn btn-outline-primary" onclick="llamarApi('GET', '/api/empresas')">GET /api/empresas</button>
+                <button class="btn btn-outline-primary" onclick="llamarApi('GET', '/api/categorias-movimiento')">GET /api/categorias-movimiento</button>
+                <button class="btn btn-outline-primary" onclick="llamarApi('GET', '/api/escenarios')">GET /api/escenarios</button>
+            </div>
+            <pre id="apiResultado" class="bg-dark text-light p-3 rounded" style="min-height:80px; white-space: pre-wrap;">Los resultados apareceran aqui...</pre>
+        </div>
+    </div>
+
+    <!-- ============== SIN TOKEN (debe fallar) ============== -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0">3. Probar sin token (debe responder 401)</h5>
+        </div>
+        <div class="card-body">
+            <button class="btn btn-outline-danger" onclick="llamarSinToken()">GET /api/empresas sin Authorization</button>
+            <pre id="sinTokenResultado" class="bg-dark text-light p-3 rounded mt-3" style="min-height:60px; white-space: pre-wrap;">Los resultados apareceran aqui...</pre>
+        </div>
+    </div>
+
+    <!-- ================== ENLACES A VISTAS ================== -->
+    <div class="card shadow-sm mb-5">
+        <div class="card-header">
+            <h5 class="mb-0">4. Ir a las pantallas del sistema</h5>
+        </div>
+        <div class="card-body d-flex flex-wrap gap-2">
+            <a href="/empresas" class="btn btn-outline-secondary">Empresas</a>
+            <a href="/cuentas" class="btn btn-outline-secondary">Cuentas de Caja</a>
+            <a href="/categorias-movimiento" class="btn btn-outline-secondary">Categorías</a>
+            <a href="/movimientos-caja" class="btn btn-outline-secondary">Movimientos</a>
+            <a href="/indicadores/calcular" class="btn btn-outline-secondary">Indicadores</a>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // ---------- Login ----------
+    async function login() {
+        const username = document.getElementById('loginUsername').value.trim();
+        const password = document.getElementById('loginPassword').value;
+        const resultadoDiv = document.getElementById('loginResultado');
+
+        if (!username || !password) {
+            resultadoDiv.innerHTML = '<div class="alert alert-warning">Completa usuario y contraseña.</div>';
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                resultadoDiv.innerHTML = `<div class="alert alert-danger">Error ${response.status}: ${data.message || 'Credenciales invalidas'}</div>`;
+                return;
+            }
+
+            // Guarda la sesion en el navegador para usarla en las siguientes llamadas
+            localStorage.setItem('sc_token', data.token);
+            localStorage.setItem('sc_username', data.username);
+            localStorage.setItem('sc_rol', data.rol);
+
+            resultadoDiv.innerHTML = '<div class="alert alert-success">Login exitoso.</div>';
+            mostrarSesion();
+        } catch (error) {
+            resultadoDiv.innerHTML = `<div class="alert alert-danger">No se pudo conectar con el servidor: ${error.message}</div>`;
+        }
+    }
+
+    // ---------- Mostrar/ocultar tarjetas segun haya sesion ----------
+    function mostrarSesion() {
+        const token = localStorage.getItem('sc_token');
+        if (!token) return;
+
+        document.getElementById('sesionUsername').textContent = localStorage.getItem('sc_username');
+        document.getElementById('sesionRol').textContent = localStorage.getItem('sc_rol');
+        document.getElementById('sesionToken').textContent = token;
+
+        document.getElementById('cardSesion').classList.remove('d-none');
+        document.getElementById('cardPruebas').classList.remove('d-none');
+    }
+
+    function cerrarSesion() {
+        localStorage.removeItem('sc_token');
+        localStorage.removeItem('sc_username');
+        localStorage.removeItem('sc_rol');
+        document.getElementById('cardSesion').classList.add('d-none');
+        document.getElementById('cardPruebas').classList.add('d-none');
+        document.getElementById('loginResultado').innerHTML = '';
+        document.getElementById('apiResultado').textContent = 'Los resultados apareceran aqui...';
+    }
+
+    // ---------- Llamar un endpoint protegido con el token guardado ----------
+    async function llamarApi(metodo, ruta) {
+        const resultadoPre = document.getElementById('apiResultado');
+        const token = localStorage.getItem('sc_token');
+
+        if (!token) {
+            resultadoPre.textContent = 'Primero inicia sesion.';
+            return;
+        }
+
+        resultadoPre.textContent = 'Cargando...';
+
+        try {
+            const response = await fetch(ruta, {
+                method: metodo,
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const data = await response.json();
+            resultadoPre.textContent = `Status: ${response.status}\n\n` + JSON.stringify(data, null, 2);
+        } catch (error) {
+            resultadoPre.textContent = 'Error de conexion: ' + error.message;
+        }
+    }
+
+    // ---------- Llamar sin token, a proposito, para demostrar que la seguridad funciona ----------
+    async function llamarSinToken() {
+        const resultadoPre = document.getElementById('sinTokenResultado');
+        resultadoPre.textContent = 'Cargando...';
+
+        try {
+            const response = await fetch('/api/empresas', { method: 'GET' });
+            const texto = await response.text();
+            resultadoPre.textContent = `Status: ${response.status}\n\n${texto || '(sin cuerpo de respuesta - acceso rechazado por seguridad)'}`;
+        } catch (error) {
+            resultadoPre.textContent = 'Error de conexion: ' + error.message;
+        }
+    }
+
+    // Si ya habia una sesion guardada (recargaste la pagina), la vuelve a mostrar
+    window.addEventListener('DOMContentLoaded', mostrarSesion);
+</script>
+
+</body>
+</html>
