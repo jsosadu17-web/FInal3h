@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Panel principal | Sistema Caja</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="bg-light">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <div class="container">
+        <a class="navbar-brand fw-semibold" href="/inicio">Sistema de Caja</a>
+        <button class="btn btn-outline-light btn-sm" id="cerrarSesion">Cerrar sesión</button>
+    </div>
+</nav>
+
+<main class="container">
+    <section class="p-4 p-md-5 mb-4 bg-white rounded-3 shadow-sm">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-8">
+                <p class="text-uppercase text-primary fw-semibold mb-2">Panel principal</p>
+                <h1 class="display-6 fw-bold mb-3">Navega por todo lo desarrollado en el proyecto</h1>
+                <p class="lead text-muted mb-0">
+                    Desde aquí puedes entrar a empresas, cuentas de caja, movimientos, categorías,
+                    indicadores, escenarios, simulaciones y al panel de pruebas de API.
+                </p>
+            </div>
+            <div class="col-lg-4">
+                <div class="card border-primary">
+                    <div class="card-body">
+                        <h2 class="h5">Sesión activa</h2>
+                        <p class="mb-1"><strong>Usuario:</strong> <span id="usuario">Invitado</span></p>
+                        <p class="mb-0"><strong>Rol:</strong> <span id="rol">Sin rol</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="row g-4">
+        <div class="col-md-6 col-xl-4">
+            <a class="card h-100 text-decoration-none shadow-sm" href="/empresas">
+                <div class="card-body">
+                    <h2 class="h5 text-primary">Empresas</h2>
+                    <p class="text-muted mb-0">Gestiona los datos de las empresas registradas.</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-6 col-xl-4">
+            <a class="card h-100 text-decoration-none shadow-sm" href="/cuentas">
+                <div class="card-body">
+                    <h2 class="h5 text-primary">Cuentas de caja</h2>
+                    <p class="text-muted mb-0">Administra saldos y cuentas asociadas a cada empresa.</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-6 col-xl-4">
+            <a class="card h-100 text-decoration-none shadow-sm" href="/movimientos-caja">
+                <div class="card-body">
+                    <h2 class="h5 text-primary">Movimientos</h2>
+                    <p class="text-muted mb-0">Consulta y registra ingresos o egresos de caja.</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-6 col-xl-4">
+            <a class="card h-100 text-decoration-none shadow-sm" href="/categorias-movimiento">
+                <div class="card-body">
+                    <h2 class="h5 text-primary">Categorías</h2>
+                    <p class="text-muted mb-0">Organiza los movimientos por tipo y descripción.</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-6 col-xl-4">
+            <a class="card h-100 text-decoration-none shadow-sm" href="/indicadores/calcular">
+                <div class="card-body">
+                    <h2 class="h5 text-primary">Indicadores</h2>
+                    <p class="text-muted mb-0">Calcula liquidez, riesgo y consulta dashboards por empresa.</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-6 col-xl-4">
+            <a class="card h-100 text-decoration-none shadow-sm" href="/index.html">
+                <div class="card-body">
+                    <h2 class="h5 text-primary">API, escenarios y simulación</h2>
+                    <p class="text-muted mb-0">Usa el panel existente para probar endpoints REST protegidos.</p>
+                </div>
+            </a>
+        </div>
+    </section>
+</main>
+
+<script>
+    const token = localStorage.getItem('sc_token');
+    if (!token) {
+        window.location.href = '/login';
+    }
+
+    document.getElementById('usuario').textContent = localStorage.getItem('sc_username') || 'Invitado';
+    document.getElementById('rol').textContent = localStorage.getItem('sc_rol') || 'Sin rol';
+    document.getElementById('cerrarSesion').addEventListener('click', () => {
+        localStorage.removeItem('sc_token');
+        localStorage.removeItem('sc_username');
+        localStorage.removeItem('sc_rol');
+        window.location.href = '/login';
+    });
+</script>
+</body>
+</html>

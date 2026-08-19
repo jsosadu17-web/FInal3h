@@ -4,13 +4,16 @@ import com.example.SistemaCaja.entities.CategoriaMovimientoEntity;
 import com.example.SistemaCaja.entities.CuentaCajaEntity;
 import com.example.SistemaCaja.entities.MovimientoCajaEntity;
 import com.example.SistemaCaja.models.MovimientoCaja;
+import com.example.SistemaCaja.exceptions.ReglaNegocioException;
 import com.example.SistemaCaja.repositories.ICategoriaMovimientoRepository;
 import com.example.SistemaCaja.repositories.ICuentaCajaRepository;
 import com.example.SistemaCaja.repositories.IMovimientoCajaRepository;
 import com.example.SistemaCaja.services.IMovimientoCajaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -45,14 +48,50 @@ public class MovimientoCajaService implements IMovimientoCajaService {
     }
 
     @Override
+    @Transactional
     public MovimientoCaja guardar(MovimientoCaja movimientoCaja) {
+        if (movimientoCaja.getId() != null) {
+            MovimientoCajaEntity movimientoAnterior = movimientoCajaRepository.findById(movimientoCaja.getId())
+                    .orElseThrow(() -> new IllegalArgumentException("El movimiento de caja no existe"));
+            revertirSaldo(movimientoAnterior);
+        }
+
         MovimientoCajaEntity entity = convertirAEntity(movimientoCaja);
+        aplicarSaldo(entity);
         return convertirAModel(movimientoCajaRepository.save(entity));
     }
 
     @Override
+    @Transactional
     public void eliminar(Long id) {
-        movimientoCajaRepository.deleteById(id);
+        MovimientoCajaEntity movimiento = movimientoCajaRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("El movimiento de caja no existe"));
+        revertirSaldo(movimiento);
+        movimientoCajaRepository.delete(movimiento);
+    }
+
+    private void aplicarSaldo(MovimientoCajaEntity movimiento) {
+        ajustarSaldo(movimiento.getCuentaCaja(), movimiento.getTipo(), movimiento.getMonto());
+    }
+
+    private void revertirSaldo(MovimientoCajaEntity movimiento) {
+        String tipoInverso = "INGRESO".equals(movimiento.getTipo()) ? "EGRESO" : "INGRESO";
+        ajustarSaldo(movimiento.getCuentaCaja(), tipoInverso, movimiento.getMonto());
+    }
+
+    private void ajustarSaldo(CuentaCajaEntity cuentaCaja, String tipo, BigDecimal monto) {
+        double saldoActual = cuentaCaja.getSaldo() == null ? 0D : cuentaCaja.getSaldo();
+        double montoMovimiento = monto.doubleValue();
+        double nuevoSaldo = "INGRESO".equals(tipo)
+                ? saldoActual + montoMovimiento
+                : saldoActual - montoMovimiento;
+
+        if (nuevoSaldo < 0) {
+            throw new ReglaNegocioException("El egreso supera el saldo disponible de la cuenta de caja");
+        }
+
+        cuentaCaja.setSaldo(nuevoSaldo);
+        cuentaCajaRepository.save(cuentaCaja);
     }
 
     private MovimientoCaja convertirAModel(MovimientoCajaEntity entity) {

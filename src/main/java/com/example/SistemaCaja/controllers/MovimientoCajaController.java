@@ -1,5 +1,6 @@
 package com.example.SistemaCaja.controllers;
 
+import com.example.SistemaCaja.exceptions.ReglaNegocioException;
 import com.example.SistemaCaja.models.MovimientoCaja;
 import com.example.SistemaCaja.services.ICategoriaMovimientoService;
 import com.example.SistemaCaja.services.ICuentaCajaService;
@@ -68,13 +69,27 @@ public class MovimientoCajaController {
                     movimientoCaja.getId() == null ? "Registrar Movimiento" : "Editar Movimiento");
             return "movimientos-caja/formulario";
         }
-        movimientoCajaService.guardar(movimientoCaja);
+        try {
+            movimientoCajaService.guardar(movimientoCaja);
+        } catch (ReglaNegocioException ex) {
+            prepararFormulario(model, movimientoCaja,
+                    movimientoCaja.getId() == null ? "Registrar Movimiento" : "Editar Movimiento");
+            model.addAttribute("error", ex.getMessage());
+            return "movimientos-caja/formulario";
+        }
         return "redirect:/movimientos-caja";
     }
 
     @GetMapping("/eliminar/{id}")
-    public String eliminarMovimiento(@PathVariable Long id) {
-        movimientoCajaService.eliminar(id);
+    public String eliminarMovimiento(@PathVariable Long id, Model model) {
+        try {
+            movimientoCajaService.eliminar(id);
+        } catch (ReglaNegocioException ex) {
+            model.addAttribute("movimientos", movimientoCajaService.obtenerTodos(null, null, null, null));
+            model.addAttribute("cuentas", cuentaCajaService.obtenerTodas());
+            model.addAttribute("error", ex.getMessage());
+            return "movimientos-caja/lista";
+        }
         return "redirect:/movimientos-caja";
     }
 
