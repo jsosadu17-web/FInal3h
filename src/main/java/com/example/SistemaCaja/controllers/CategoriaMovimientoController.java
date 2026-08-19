@@ -17,9 +17,11 @@ public class CategoriaMovimientoController {
     private final ICategoriaMovimientoService categoriaMovimientoService;
 
     @GetMapping
-    public String listar(Model model) {
+    public String listar(@RequestParam(required = false) String tipo, Model model) {
+        String tipoNormalizado = tipo == null || tipo.isBlank() ? null : tipo;
         model.addAttribute("categorias",
-                categoriaMovimientoService.obtenerTodas(null));
+                categoriaMovimientoService.obtenerTodas(tipoNormalizado));
+        model.addAttribute("tipoSeleccionado", tipoNormalizado);
         return "categorias-movimiento/lista";
     }
 
